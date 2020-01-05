@@ -12,7 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
 
@@ -33,12 +35,12 @@ public class AuthorizeController {
 
     @Autowired
     private UserMapper userMapper;
-    private GitHubUser gitHubUser;
 
 
     @GetMapping("/callback")
     public String callback(@RequestParam(name = "code")String code,
-                           HttpServletRequest request){
+                           HttpServletRequest request,
+                           HttpServletResponse response){
 //        Spring 将上下分中request放在这个变量里面
         AccessTokenDTO accessToken = new AccessTokenDTO();
         accessToken.setClient_id(client_id);
@@ -47,17 +49,19 @@ public class AuthorizeController {
         accessToken.setRedirect_url(client_url);
 
         String accessToken1 = githubProvider.getAccessToken(accessToken);
-        GitHubUser gitHubUser  = githubProvider.getuser(accessToken1);
+        GitHubUser gitHubUser = githubProvider.getuser(accessToken1);
         if(gitHubUser !=null){
             User user = new User();
             user.setAccount_id(String.valueOf(gitHubUser.getId()));
             user.setGmt_create(System.currentTimeMillis());
             user.setGmt_modified(user.getGmt_create());
             user.setName(gitHubUser.getName());
-            user.setUser_token(UUID.randomUUID().toString());
-            userMapper.AddUser(user);
+            String token = UUID.randomUUID().toString();
+            user.setUser_token(token);
 
-            request.getSession().setAttribute("user", gitHubUser);
+            userMapper.AddUser(user);
+            response.addCookie(new Cookie("token", token));
+
             return "redirect:index";
 //            重定向index页面
 //            从html页面判断 是否有session
