@@ -28,6 +28,9 @@
             <ul class="nav navbar-nav navbar-right">
 
                 <li th:if="${session.user==null}"><a href="https://github.com/login/oauth/authorize?client_id=e5d0b146e739a5e4ef88&redirect_uri=http://localhost:8080/callback&score=user&token=1">登录</a></li>
+                <li th:if="${session.user!=null}">
+                    <a href="/publish">发布</a>
+                </li>
 
                 <li class="dropdown" th:if="${session.user!=null}">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" th:text="${session.user.getName()}"> <span class="caret"></span></a>

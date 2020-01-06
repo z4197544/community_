@@ -38,9 +38,9 @@ public class AuthorizeController {
 
 
     @GetMapping("/callback")
-    public String callback(@RequestParam(name = "code")String code,
+    public String callback(@RequestParam(name = "code") String code,
                            HttpServletRequest request,
-                           HttpServletResponse response){
+                           HttpServletResponse response) {
 //        Spring 将上下分中request放在这个变量里面
         AccessTokenDTO accessToken = new AccessTokenDTO();
         accessToken.setClient_id(client_id);
@@ -50,7 +50,7 @@ public class AuthorizeController {
 
         String accessToken1 = githubProvider.getAccessToken(accessToken);
         GitHubUser gitHubUser = githubProvider.getuser(accessToken1);
-        if(gitHubUser !=null){
+        if (gitHubUser != null) {
             User user = new User();
             user.setAccount_id(String.valueOf(gitHubUser.getId()));
             user.setGmt_create(System.currentTimeMillis());
@@ -65,7 +65,7 @@ public class AuthorizeController {
 //            重定向index页面
             return "redirect:index";
 
-        }else{
+        } else {
             return "redirect:index";
         }
     }
