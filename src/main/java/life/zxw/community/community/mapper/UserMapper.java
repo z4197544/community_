@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.*;
 public interface UserMapper {
 
     @Select("select * from user where user_token = (#{token})")
-     User findByToken(@Param("token") String token);
+     User findByToken(String token);
 
     @Insert("insert into user(account_id,name,user_token,gmt_create, gmt_modified) values(#{account_id},#{name},#{user_token},#{gmt_create},#{gmt_modified})")
     public void AddUser(User user);

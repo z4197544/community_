@@ -58,13 +58,13 @@ public class AuthorizeController {
             user.setName(gitHubUser.getName());
             String token = UUID.randomUUID().toString();
             user.setUser_token(token);
-
             userMapper.AddUser(user);
-            response.addCookie(new Cookie("token", token));
 
-            return "redirect:index";
+//           将唯一标识token放入到Cookie中
+            response.addCookie(new Cookie("token", token));
 //            重定向index页面
-//            从html页面判断 是否有session
+            return "redirect:index";
+
         }else{
             return "redirect:index";
         }

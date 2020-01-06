@@ -23,6 +23,7 @@ public class IndexController {
     public String index(HttpServletRequest request){
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie:cookies){
+//            cookie是字典的形式存在的，当找到名字为token时，就要查看它的值，即getValue()
             if (cookie.getName().equals("token")){
                 String token = cookie.getValue();
                 User user = userMapper.findByToken(token);
