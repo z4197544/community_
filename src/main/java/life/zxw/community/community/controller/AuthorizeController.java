@@ -47,7 +47,6 @@ public class AuthorizeController {
         accessToken.setClient_secret(client_secret);
         accessToken.setCode(code);
         accessToken.setRedirect_url(client_url);
-
         String accessToken1 = githubProvider.getAccessToken(accessToken);
         GitHubUser gitHubUser = githubProvider.getuser(accessToken1);
         if (gitHubUser != null) {
@@ -56,6 +55,7 @@ public class AuthorizeController {
             user.setGmt_create(System.currentTimeMillis());
             user.setGmt_modified(user.getGmt_create());
             user.setName(gitHubUser.getName());
+            user.setAvatar_url(gitHubUser.getAvatar_url());
             String token = UUID.randomUUID().toString();
             user.setUser_token(token);
             userMapper.AddUser(user);
@@ -66,7 +66,7 @@ public class AuthorizeController {
             return "redirect:index";
 
         } else {
-            return "redirect:index";
+            return "redirect:/";
         }
     }
 

@@ -84,7 +84,7 @@ public class PublicController {
 
 
         questionMapper.create(question);
-        return "redirect:/index";
+        return "redirect:/";
 
     }
 }

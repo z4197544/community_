@@ -29,6 +29,7 @@ public class GithubProvider {
             return null;
     }
 
+
     public GitHubUser getuser(String accesstoken) {
         OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
@@ -38,6 +39,7 @@ public class GithubProvider {
         try {
             Response response = client.newCall(request).execute();
             String string = response.body().string();
+//            string这时已拥有所有的信息，这时候githubuser如果想获取更多的信息，就可以增加相应的属性。
             GitHubUser gitHubUser = JSON.parseObject(string,GitHubUser.class);
             return gitHubUser;
         } catch (IOException e) {

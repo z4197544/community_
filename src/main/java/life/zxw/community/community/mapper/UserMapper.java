@@ -8,8 +8,9 @@ public interface UserMapper {
     @Select("select * from user where user_token = (#{token})")
      User findByToken(String token);
 
-    @Insert("insert into user(account_id,name,user_token,gmt_create, gmt_modified) values(#{account_id},#{name},#{user_token},#{gmt_create},#{gmt_modified})")
+    @Insert("insert into user(account_id,name,user_token,gmt_create, gmt_modified,avatar_url) values(#{account_id},#{name},#{user_token},#{gmt_create},#{gmt_modified},#{avatar_url})")
     public void AddUser(User user);
 
-
+    @Select("select * from user where id = (#{id})")
+    User findById(@Param("id") int id);
 }
