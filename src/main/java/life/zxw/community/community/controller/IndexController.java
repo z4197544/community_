@@ -20,18 +20,12 @@ import java.util.List;
 
 @Controller
 public class IndexController {
-
-    @Autowired
-    private UserMapper userMapper;
-
-
     @Autowired
     private QuestionService questionService;
 
-
+// 控制首页，用于展示全部的问题
     @GetMapping("/")
-    public String index(HttpServletRequest request,
-                        Model model,
+    public String index(Model model,
                         @RequestParam(name = "page", defaultValue = "1") Integer page,
                         @RequestParam(name = "size", defaultValue = "3") Integer size) {
         PagesDTO pagesDTO = questionService.list(page,size);

@@ -21,6 +21,7 @@ public class QuestionService {
     @Autowired
     private QuestionMapper questionMapper;
 
+//    将问题全部列出，用于首页问题展示
     public PagesDTO list(Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
         Integer totalcount = questionMapper.count();
@@ -60,6 +61,7 @@ public class QuestionService {
         return pagesDTO;
     }
 
+//    将相关用户的问题全部列出，由于用户个人问题展示
     public PagesDTO listByUser(int userId, Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
         Integer totalcount = questionMapper.countByUser(userId);
@@ -101,6 +103,7 @@ public class QuestionService {
 
     }
 
+//    将单个问题展示
     public QuestionDTO getById(Integer id) {
         Question question = questionMapper.getById(id);
         QuestionDTO questionDTO = new QuestionDTO();

@@ -1,6 +1,5 @@
 package life.zxw.community.community.mapper;
 
-import life.zxw.community.community.dto.QuestionDTO;
 import life.zxw.community.community.model.Question;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -15,13 +14,13 @@ public interface QuestionMapper {
     public void create(Question question);
 
     @Select("select * from question limit #{start_page},#{size}")
-    List<Question> list(@Param(value = "start_page") Integer start_page, @Param(value = "size")Integer size);
+    List<Question> list(@Param(value = "start_page") Integer start_page, @Param(value = "size") Integer size);
 
     @Select("select count(1) from question ")
     public int count();
 
     @Select("select * from question where creator = #{userId} limit #{start_page},#{size} ")
-    List<Question> listByUser(@Param(value = "userId")Integer userId, @Param(value = "start_page") Integer start_page, @Param(value = "size") Integer size);
+    List<Question> listByUser(@Param(value = "userId") Integer userId, @Param(value = "start_page") Integer start_page, @Param(value = "size") Integer size);
 
     @Select("select count(1) from question where creator = #{userId}")
     Integer countByUser(@Param(value = "userId") Integer userId);

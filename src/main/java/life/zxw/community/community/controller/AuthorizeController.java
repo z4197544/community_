@@ -35,12 +35,9 @@ public class AuthorizeController {
     private String client_url;
 
     @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
     private UserService userService;
 
-//    实现授权登陆操作
+    //    实现授权登陆操作
     @GetMapping("/callback")
     public String callback(@RequestParam(name = "code") String code,
                            HttpServletResponse response) {
@@ -52,7 +49,7 @@ public class AuthorizeController {
         accessToken.setRedirect_url(client_url);
         String accessToken1 = githubProvider.getAccessToken(accessToken);
         GitHubUser gitHubUser = githubProvider.getuser(accessToken1);
-        if (gitHubUser != null && gitHubUser.getId()!= null) {
+        if (gitHubUser != null && gitHubUser.getId() != null) {
 
             User user = new User();
             user.setAccount_id(String.valueOf(gitHubUser.getId()));
@@ -73,12 +70,14 @@ public class AuthorizeController {
         }
     }
 
-//    实现退出登录操作
+
+    //    实现退出登录操作
     @GetMapping("/logout")
     public String logout(HttpServletRequest request,
-                         HttpServletResponse response){
+                         HttpServletResponse response) {
 //        将session从页面中移除
         request.getSession().removeAttribute("user");
+
 //        将自定义的 token cookie从页面中移除
         Cookie cookie = new Cookie("token", "null");
         cookie.setMaxAge(0);

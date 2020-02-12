@@ -1,7 +1,6 @@
 package life.zxw.community.community.controller;
 
 import life.zxw.community.community.mapper.QuestionMapper;
-import life.zxw.community.community.mapper.UserMapper;
 import life.zxw.community.community.model.Question;
 import life.zxw.community.community.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
 import javax.servlet.http.HttpServletRequest;
 
 @Controller
@@ -18,13 +18,12 @@ public class PublicController {
     @Autowired
     private QuestionMapper questionMapper;
 
-    User user;
-
     @GetMapping("/publish")
     public String publish() {
         return "publish";
     }
 
+    //post：邮寄。向指定资源提交数据进行处理请求(例如提交表单或者上传文件)。
     @PostMapping("/publish")
     public String doPublish(
             @RequestParam("title") String title,
@@ -66,8 +65,6 @@ public class PublicController {
         question.setCreator(user.getId());
         question.setGmt_create(System.currentTimeMillis());
         question.setGmt_modified(question.getGmt_modified());
-
-
         questionMapper.create(question);
         return "redirect:/";
 

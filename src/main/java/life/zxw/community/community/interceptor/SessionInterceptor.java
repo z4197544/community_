@@ -16,6 +16,7 @@ public class SessionInterceptor implements HandlerInterceptor {
     @Autowired
     private UserMapper userMapper;
 
+    //    拦截器：在每一个网页之前，判断一下用户是否登录，即有自己设定的token存在
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         Cookie[] cookies = request.getCookies();
@@ -24,6 +25,7 @@ public class SessionInterceptor implements HandlerInterceptor {
             if (cookie.getName().equals("token")) {
                 String token = cookie.getValue();
                 User user = userMapper.findByToken(token);
+//               当查到这个user真实存在时，将其写入到session中
                 if (user != null) {
                     request.getSession().setAttribute("user", user);
                 }
