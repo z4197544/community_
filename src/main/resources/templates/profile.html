@@ -44,29 +44,29 @@
             <nav aria-label="Page navigation">
                 <ul class="pagination">
                     <li th:if="${pagesDTO.first_page}">
-                        <a th:href="@{/(page=1 )}" aria-label="Previous">
+                        <a th:href="@{'/profile/'+${section}(page=${1})}" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
 
                     <li th:if="${pagesDTO.previous_page}">
-                        <a th:href="@{/(page=${pagesDTO.page - 1})}" aria-label="Previous">
+                        <a th:href="@{'/profile/'+${section}(page=${pagesDTO.page - 1})}" aria-label="Previous">
                             <span aria-hidden="true">&lt;</span>
                         </a>
                     </li>
 
                     <li th:each="page: ${pagesDTO.pages}" th:class="${pagesDTO.page==page}?'active':''">
-                        <a th:href="@{/(page=${page})}" th:text="${page}">
+                        <a th:href="@{'/profile/'+${section}(page=${page})}" th:text="${page}">
                         </a>
                     </li>
 
                     <li th:if="${pagesDTO.next_page}">
-                        <a th:href="@{/(page=${pagesDTO.page + 1})}" aria-label="Next">
+                        <a th:href="@{'/profile/'+${section}(page=${pagesDTO.page + 1})}" aria-label="Next">
                             <span aria-hidden="true">&gt;</span>
                         </a>
                     </li>
                     <li th:if="${pagesDTO.last_page}">
-                        <a th:href="@{/(page=${pagesDTO.page_count})}" aria-label="Next">
+                        <a th:href="@{'/profile/'+${section}(page=${pagesDTO.page_count})}" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>

@@ -6,6 +6,7 @@ import life.zxw.community.community.dto.GitHubUser;
 import life.zxw.community.community.mapper.UserMapper;
 import life.zxw.community.community.model.User;
 import life.zxw.community.community.provider.GithubProvider;
+import life.zxw.community.community.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -36,10 +37,12 @@ public class AuthorizeController {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private UserService userService;
 
+//    实现授权登陆操作
     @GetMapping("/callback")
     public String callback(@RequestParam(name = "code") String code,
-                           HttpServletRequest request,
                            HttpServletResponse response) {
 //        Spring 将上下分中request放在这个变量里面
         AccessTokenDTO accessToken = new AccessTokenDTO();
@@ -49,25 +52,38 @@ public class AuthorizeController {
         accessToken.setRedirect_url(client_url);
         String accessToken1 = githubProvider.getAccessToken(accessToken);
         GitHubUser gitHubUser = githubProvider.getuser(accessToken1);
-        if (gitHubUser != null) {
+        if (gitHubUser != null && gitHubUser.getId()!= null) {
+
             User user = new User();
             user.setAccount_id(String.valueOf(gitHubUser.getId()));
-            user.setGmt_create(System.currentTimeMillis());
-            user.setGmt_modified(user.getGmt_create());
             user.setName(gitHubUser.getName());
             user.setAvatar_url(gitHubUser.getAvatar_url());
             String token = UUID.randomUUID().toString();
             user.setUser_token(token);
-            userMapper.AddUser(user);
+
+            userService.CreateOrUpadate(user);
 
 //           将唯一标识token放入到Cookie中
             response.addCookie(new Cookie("token", token));
 //            重定向index页面
-            return "redirect:index";
+            return "redirect:/";
 
         } else {
             return "redirect:/";
         }
+    }
+
+//    实现退出登录操作
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request,
+                         HttpServletResponse response){
+//        将session从页面中移除
+        request.getSession().removeAttribute("user");
+//        将自定义的 token cookie从页面中移除
+        Cookie cookie = new Cookie("token", "null");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return "redirect:/";
     }
 
 }

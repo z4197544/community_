@@ -34,18 +34,6 @@ public class IndexController {
                         Model model,
                         @RequestParam(name = "page", defaultValue = "1") Integer page,
                         @RequestParam(name = "size", defaultValue = "3") Integer size) {
-
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-//            cookie是字典的形式存在的，当找到名字为token时，就要查看它的值，即getValue()
-            if (cookie.getName().equals("token")) {
-                String token = cookie.getValue();
-                User user = userMapper.findByToken(token);
-                if (user != null) {
-                    request.getSession().setAttribute("user", user);
-                }
-            }
-        }
         PagesDTO pagesDTO = questionService.list(page,size);
         model.addAttribute("pagesDTO", pagesDTO);
         return "index";

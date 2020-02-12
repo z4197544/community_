@@ -24,13 +24,22 @@ public class QuestionService {
     public PagesDTO list(Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
         Integer totalcount = questionMapper.count();
-        pagesDTO.setPages(totalcount, size, page);
+        Integer page_count;
+
+        if (totalcount % size == 0) {
+            page_count = totalcount / size;
+        } else {
+            page_count = totalcount / size + 1;
+        }
+
         if (page < 1) {
             page = 1;
         }
-        if (page > pagesDTO.getPage_count()) {
-            page = pagesDTO.getPage_count();
+
+        if (page > page_count) {
+            page = page_count;
         }
+        pagesDTO.setPages(page_count, page);
 
         Integer start_page = size * (page - 1);
         List<Question> questions = questionMapper.list(start_page, size);
@@ -54,13 +63,23 @@ public class QuestionService {
     public PagesDTO listByUser(int userId, Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
         Integer totalcount = questionMapper.countByUser(userId);
-        pagesDTO.setPages(totalcount, size, page);
+        Integer page_count;
+
+        if (totalcount % size == 0) {
+            page_count = totalcount / size;
+        } else {
+            page_count = totalcount / size + 1;
+        }
+
         if (page < 1) {
             page = 1;
         }
-        if (page > pagesDTO.getPage_count()) {
-            page = pagesDTO.getPage_count();
+        if (page > page_count) {
+            page = page_count;
         }
+        pagesDTO.setPages(page_count, page);
+
+
 
         Integer start_page = size * (page - 1);
         List<Question> questions = questionMapper.listByUser(userId,start_page, size);
@@ -80,5 +99,14 @@ public class QuestionService {
 
         return pagesDTO;
 
+    }
+
+    public QuestionDTO getById(Integer id) {
+        Question question = questionMapper.getById(id);
+        QuestionDTO questionDTO = new QuestionDTO();
+        BeanUtils.copyProperties(question, questionDTO);
+        User user = userMapper.findById(question.getCreator());
+        questionDTO.setUser(user);
+        return questionDTO;
     }
 }

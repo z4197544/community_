@@ -16,19 +16,8 @@ public class PagesDTO {
     private List<Integer> pages = new ArrayList<>();
     private Integer page_count;
 
-    public void setPages(Integer question_count, Integer size, Integer page) {
-
-        if (question_count % size == 0) {
-            page_count = question_count / size;
-        } else {
-            page_count = question_count / size + 1;
-        }
-        if (page < 1) {
-            page = 1;
-        }
-        if (page > page_count) {
-            page = page_count;
-        }
+    public void setPages(Integer question_count,Integer page) {
+        this.page_count = question_count;
         this.page = page;
         pages.add(page);
 
