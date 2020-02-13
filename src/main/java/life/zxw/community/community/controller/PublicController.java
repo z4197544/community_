@@ -3,10 +3,12 @@ package life.zxw.community.community.controller;
 import life.zxw.community.community.mapper.QuestionMapper;
 import life.zxw.community.community.model.Question;
 import life.zxw.community.community.model.User;
+import life.zxw.community.community.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -18,17 +20,21 @@ public class PublicController {
     @Autowired
     private QuestionMapper questionMapper;
 
+    @Autowired
+    private QuestionService questionService;
+
     @GetMapping("/publish")
     public String publish() {
         return "publish";
     }
 
-    //post：邮寄。向指定资源提交数据进行处理请求(例如提交表单或者上传文件)。
+    //post：邮寄。向指定资源提交数据进行处理请求(例如提交表单或者上传文件)，和页面中的 input 标签匹配，并且通过model将用户已经完成的内容显示在页面上。
     @PostMapping("/publish")
     public String doPublish(
-            @RequestParam("title") String title,
-            @RequestParam("description") String description,
-            @RequestParam("tag") String tag,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "tag", required = false) String tag,
+            @RequestParam(value = "id", required = false) Integer id,
             HttpServletRequest request,
             Model model
     ) {
@@ -63,10 +69,29 @@ public class PublicController {
         question.setDescription(description);
         question.setTitle(title);
         question.setCreator(user.getId());
-        question.setGmt_create(System.currentTimeMillis());
-        question.setGmt_modified(question.getGmt_modified());
-        questionMapper.create(question);
-        return "redirect:/";
+        if (id == null) {
+            questionService.CreateOrUpdate(question);
+            return "redirect:/";
+        } else {
+            question.setId(id);
+            questionService.CreateOrUpdate(question);
+            return "redirect:/";
+        }
+
+
+    }
+
+
+    //    实现编辑按钮跳转功能，并且通过model将用户之前写的内容显示在页面上。
+    @GetMapping("/publish/{id}")
+    public String edit(@PathVariable(name = "id") Integer id,
+                       Model model) {
+        Question question = questionMapper.getById(id);
+        model.addAttribute("title", question.getTitle());
+        model.addAttribute("description", question.getDescription());
+        model.addAttribute("tag", question.getTag());
+        model.addAttribute("id", question.getId());
+        return "publish";
 
     }
 }

@@ -21,7 +21,7 @@ public class QuestionService {
     @Autowired
     private QuestionMapper questionMapper;
 
-//    将问题全部列出，用于首页问题展示
+    //    将问题全部列出，用于首页问题展示
     public PagesDTO list(Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
         Integer totalcount = questionMapper.count();
@@ -61,7 +61,7 @@ public class QuestionService {
         return pagesDTO;
     }
 
-//    将相关用户的问题全部列出，由于用户个人问题展示
+    //    将相关用户的问题全部列出，由于用户个人问题展示
     public PagesDTO listByUser(int userId, Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
         Integer totalcount = questionMapper.countByUser(userId);
@@ -82,9 +82,8 @@ public class QuestionService {
         pagesDTO.setPages(page_count, page);
 
 
-
         Integer start_page = size * (page - 1);
-        List<Question> questions = questionMapper.listByUser(userId,start_page, size);
+        List<Question> questions = questionMapper.listByUser(userId, start_page, size);
         List<QuestionDTO> questionDTOList = new ArrayList<>();
 
         for (Question question : questions) {
@@ -103,7 +102,7 @@ public class QuestionService {
 
     }
 
-//    将单个问题展示
+    //    将单个问题展示
     public QuestionDTO getById(Integer id) {
         Question question = questionMapper.getById(id);
         QuestionDTO questionDTO = new QuestionDTO();
@@ -111,5 +110,18 @@ public class QuestionService {
         User user = userMapper.findById(question.getCreator());
         questionDTO.setUser(user);
         return questionDTO;
+    }
+
+    //    用于更新问题或者发布问题
+    public void CreateOrUpdate(Question question) {
+        Question dbquestion = questionMapper.getById(question.getId());
+        if (dbquestion == null) {
+            question.setGmt_create(System.currentTimeMillis());
+            questionMapper.create(question);
+        } else {
+            question.setGmt_modified(System.currentTimeMillis());
+            questionMapper.update(question);
+        }
+
     }
 }

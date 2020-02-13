@@ -21,7 +21,6 @@ public class UserService {
             userMapper.UpdateToken(dduser);
         } else {
             user.setGmt_create(System.currentTimeMillis());
-            user.setGmt_modified(user.getGmt_create());
             userMapper.AddUser(user);
         }
     }
