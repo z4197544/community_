@@ -2,10 +2,14 @@ package life.zxw.community.community.service;
 
 import life.zxw.community.community.dto.PagesDTO;
 import life.zxw.community.community.dto.QuestionDTO;
+import life.zxw.community.community.exception.CustomizeErrorCode;
+import life.zxw.community.community.exception.CustomizeException;
 import life.zxw.community.community.mapper.QuestionMapper;
 import life.zxw.community.community.mapper.UserMapper;
 import life.zxw.community.community.model.Question;
+import life.zxw.community.community.model.QuestionExample;
 import life.zxw.community.community.model.User;
+import org.apache.ibatis.session.RowBounds;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +28,7 @@ public class QuestionService {
     //    将问题全部列出，用于首页问题展示
     public PagesDTO list(Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
-        Integer totalcount = questionMapper.count();
+        Integer totalcount = (int)questionMapper.countByExample(new QuestionExample());
         Integer page_count;
 
         if (totalcount % size == 0) {
@@ -43,11 +47,11 @@ public class QuestionService {
         pagesDTO.setPages(page_count, page);
 
         Integer start_page = size * (page - 1);
-        List<Question> questions = questionMapper.list(start_page, size);
+        List<Question> questions = questionMapper.selectByExampleWithBLOBsWithRowbounds(new QuestionExample(),new RowBounds(start_page,size));
         List<QuestionDTO> questionDTOList = new ArrayList<>();
 
         for (Question question : questions) {
-            User user = userMapper.findById(question.getCreator());
+            User user = userMapper.selectByPrimaryKey(question.getCreator());
             QuestionDTO questionDTO = new QuestionDTO();
 
             BeanUtils.copyProperties(question, questionDTO);
@@ -64,7 +68,10 @@ public class QuestionService {
     //    将相关用户的问题全部列出，由于用户个人问题展示
     public PagesDTO listByUser(int userId, Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
-        Integer totalcount = questionMapper.countByUser(userId);
+        QuestionExample example = new QuestionExample();
+        example.createCriteria()
+                .andCreatorEqualTo(userId);
+        Integer totalcount = (int)questionMapper.countByExample(example);
         Integer page_count;
 
         if (totalcount % size == 0) {
@@ -83,11 +90,14 @@ public class QuestionService {
 
 
         Integer start_page = size * (page - 1);
-        List<Question> questions = questionMapper.listByUser(userId, start_page, size);
+        QuestionExample questionExample = new QuestionExample();
+        questionExample.createCriteria()
+                .andCreatorEqualTo(userId);
+        List<Question> questions = questionMapper.selectByExampleWithBLOBsWithRowbounds(questionExample,new RowBounds());
         List<QuestionDTO> questionDTOList = new ArrayList<>();
 
         for (Question question : questions) {
-            User user = userMapper.findById(question.getCreator());
+            User user = userMapper.selectByPrimaryKey(question.getCreator());
             QuestionDTO questionDTO = new QuestionDTO();
 
             BeanUtils.copyProperties(question, questionDTO);
@@ -104,24 +114,47 @@ public class QuestionService {
 
     //    将单个问题展示
     public QuestionDTO getById(Integer id) {
-        Question question = questionMapper.getById(id);
+        Question question = questionMapper.selectByPrimaryKey(id);
+        if (question == null){
+             throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+        }
         QuestionDTO questionDTO = new QuestionDTO();
         BeanUtils.copyProperties(question, questionDTO);
-        User user = userMapper.findById(question.getCreator());
+        User user = userMapper.selectByPrimaryKey(question.getCreator());
         questionDTO.setUser(user);
         return questionDTO;
     }
 
     //    用于更新问题或者发布问题
     public void CreateOrUpdate(Question question) {
-        Question dbquestion = questionMapper.getById(question.getId());
+        Question dbquestion = questionMapper.selectByPrimaryKey(question.getId());
         if (dbquestion == null) {
-            question.setGmt_create(System.currentTimeMillis());
-            questionMapper.create(question);
+            question.setGmtCreate(System.currentTimeMillis());
+            question.setViewCount(0);
+            question.setCommentCount(0);
+            questionMapper.insert(question);
         } else {
-            question.setGmt_modified(System.currentTimeMillis());
-            questionMapper.update(question);
+            question.setGmtModified(System.currentTimeMillis());
+
+            QuestionExample example = new QuestionExample();
+            example.createCriteria()
+                    .andIdEqualTo(question.getId());
+            int update = questionMapper.updateByExampleSelective(question, example);
+            if (update != 1){
+                throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+            }
         }
 
+    }
+
+    //     用于更新浏览数
+    public void incVieCount(Integer id) {
+        Question  question = questionMapper.selectByPrimaryKey(id);
+        question.setViewCount(question.getViewCount()+1);
+
+        QuestionExample example = new QuestionExample();
+        example.createCriteria()
+                .andIdEqualTo(id);
+        questionMapper.updateByExampleSelective(question, example);
     }
 }

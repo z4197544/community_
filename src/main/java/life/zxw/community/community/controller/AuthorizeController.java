@@ -52,11 +52,11 @@ public class AuthorizeController {
         if (gitHubUser != null && gitHubUser.getId() != null) {
 
             User user = new User();
-            user.setAccount_id(String.valueOf(gitHubUser.getId()));
+            user.setAccountId(String.valueOf(gitHubUser.getId()));
             user.setName(gitHubUser.getName());
-            user.setAvatar_url(gitHubUser.getAvatar_url());
+            user.setAvatarUrl(gitHubUser.getAvatar_url());
             String token = UUID.randomUUID().toString();
-            user.setUser_token(token);
+            user.setUserToken(token);
 
             userService.CreateOrUpadate(user);
 

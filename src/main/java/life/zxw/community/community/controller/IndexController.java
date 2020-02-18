@@ -6,6 +6,7 @@ import life.zxw.community.community.dto.QuestionDTO;
 import life.zxw.community.community.mapper.QuestionMapper;
 import life.zxw.community.community.mapper.UserMapper;
 import life.zxw.community.community.model.Question;
+import life.zxw.community.community.model.QuestionExample;
 import life.zxw.community.community.model.User;
 import life.zxw.community.community.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;

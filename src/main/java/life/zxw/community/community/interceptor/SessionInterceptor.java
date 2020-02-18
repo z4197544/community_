@@ -2,6 +2,7 @@ package life.zxw.community.community.interceptor;
 
 import life.zxw.community.community.mapper.UserMapper;
 import life.zxw.community.community.model.User;
+import life.zxw.community.community.model.UserExample;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -10,6 +11,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @Service
 public class SessionInterceptor implements HandlerInterceptor {
@@ -24,10 +26,13 @@ public class SessionInterceptor implements HandlerInterceptor {
 //            cookie是字典的形式存在的，当找到名字为token时，就要查看它的值，即getValue()
             if (cookie.getName().equals("token")) {
                 String token = cookie.getValue();
-                User user = userMapper.findByToken(token);
+                UserExample userExample = new UserExample();
+                userExample.createCriteria()
+                        .andUserTokenEqualTo(token);
+               List<User> user = userMapper.selectByExample(userExample);
 //               当查到这个user真实存在时，将其写入到session中
-                if (user != null) {
-                    request.getSession().setAttribute("user", user);
+                if (user.size()!= 0) {
+                    request.getSession().setAttribute("user", user.get(0));
                 }
                 break;
             }
