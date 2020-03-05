@@ -25,7 +25,7 @@ public class QuestionService {
     @Autowired
     private QuestionMapper questionMapper;
 
-    //    将问题全部列出，用于首页问题展示
+    //    将问题全部列出，用于首页问题展示'
     public PagesDTO list(Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
         Integer totalcount = (int)questionMapper.countByExample(new QuestionExample());
@@ -66,7 +66,7 @@ public class QuestionService {
     }
 
     //    将相关用户的问题全部列出，由于用户个人问题展示
-    public PagesDTO listByUser(int userId, Integer page, Integer size) {
+    public PagesDTO listByUser(Long userId, Integer page, Integer size) {
         PagesDTO pagesDTO = new PagesDTO();
         QuestionExample example = new QuestionExample();
         example.createCriteria()
@@ -113,7 +113,7 @@ public class QuestionService {
     }
 
     //    将单个问题展示
-    public QuestionDTO getById(Integer id) {
+    public QuestionDTO getById( Long id) {
         Question question = questionMapper.selectByPrimaryKey(id);
         if (question == null){
              throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
@@ -132,6 +132,7 @@ public class QuestionService {
             question.setGmtCreate(System.currentTimeMillis());
             question.setViewCount(0);
             question.setCommentCount(0);
+            question.setLikeCount(0);
             questionMapper.insert(question);
         } else {
             question.setGmtModified(System.currentTimeMillis());
@@ -148,7 +149,7 @@ public class QuestionService {
     }
 
     //     用于更新浏览数
-    public void incVieCount(Integer id) {
+    public void incVieCount(Long id) {
         Question  question = questionMapper.selectByPrimaryKey(id);
         question.setViewCount(question.getViewCount()+1);
 

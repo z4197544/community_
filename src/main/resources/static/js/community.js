@@ -7,7 +7,9 @@
  */
 function post() {
     var questionId = $("#question_id").val();
+    console.log(questionId);
     var content = $("#comment_content").val();
+    console.log(content);
     comment2target(questionId, 1, content);
 }
 
@@ -33,8 +35,9 @@ function comment2target(targetId, type, content) {
                 if (response.code == 2003) {
                     var isAccepted = confirm(response.message);
                     if (isAccepted) {
-                        window.open("https://github.com/login/oauth/authorize?client_id=2859958f9f059979ed3a&redirect_uri=" + document.location.origin + "/callback&scope=user&state=1");
+                        window.open("https://github.com/login/oauth/authorize?client_id=e5d0b146e739a5e4ef88&redirect_uri=http://localhost:8080/callback&score=user&token=1");
                         window.localStorage.setItem("closable", true);
+
                     }
                 } else {
                     alert(response.message);
