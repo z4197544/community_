@@ -3,6 +3,7 @@ package life.zxw.community.community.interceptor;
 import life.zxw.community.community.mapper.UserMapper;
 import life.zxw.community.community.model.User;
 import life.zxw.community.community.model.UserExample;
+import life.zxw.community.community.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -17,6 +18,9 @@ import java.util.List;
 public class SessionInterceptor implements HandlerInterceptor {
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private NotificationService notificationService;
 
     //    拦截器：在每一个网页之前，判断一下用户是否登录，即有自己设定的token存在
     @Override
@@ -33,6 +37,8 @@ public class SessionInterceptor implements HandlerInterceptor {
 //               当查到这个user真实存在时，将其写入到session中
                 if (user.size()!= 0) {
                     request.getSession().setAttribute("user", user.get(0));
+                    Long unreadcount = notificationService.unreadcount(user.get(0).getId());
+                    request.getSession().setAttribute("unreadcount", unreadcount);
                 }
                 break;
             }

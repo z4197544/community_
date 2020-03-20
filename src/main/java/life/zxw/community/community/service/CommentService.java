@@ -1,11 +1,13 @@
 package life.zxw.community.community.service;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader;
 import life.zxw.community.community.dto.CommentDTO;
 import life.zxw.community.community.enums.CommentTypeEnum;
+import life.zxw.community.community.enums.NotificationStatusEnum;
+import life.zxw.community.community.enums.NotificationTypeEnum;
 import life.zxw.community.community.exception.CustomizeErrorCode;
 import life.zxw.community.community.exception.CustomizeException;
 import life.zxw.community.community.mapper.CommentMapper;
+import life.zxw.community.community.mapper.NotificationMapper;
 import life.zxw.community.community.mapper.QuestionMapper;
 import life.zxw.community.community.mapper.UserMapper;
 import life.zxw.community.community.model.*;
@@ -14,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +38,12 @@ public class CommentService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private NotificationMapper notificationMapper;
+
     @Transactional
     //     根据情况，判断是否将评论插入到数据库
-    public void insert(Comment comment) {
+    public void insert(Comment comment, User commentator) {
         if (comment.getParentId() == null || comment.getParentId() == 0) {
             throw new CustomizeException(CustomizeErrorCode.TARGET_PARAM_NOT_FOUND);
         }
@@ -54,7 +58,12 @@ public class CommentService {
             if (dbComment == null) {
                 throw new CustomizeException(CustomizeErrorCode.COMMENT_NOT_FOUND);
             }
+            Question question = questionMapper.selectByPrimaryKey(dbComment.getParentId());
+            if (question == null) {
+                throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+            }
             commentMapper.insert(comment);
+            createNotify(comment, dbComment.getCommentator(),commentator.getName(),question.getTitle(), NotificationTypeEnum.REPLY_COMMENT,question.getId());
         } else {
             // 回复问题
             Question question = questionMapper.selectByPrimaryKey(comment.getParentId());
@@ -62,34 +71,74 @@ public class CommentService {
                 throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
             }
             commentMapper.insert(comment);
+            createNotify(comment, question.getCreator(), commentator.getName(),question.getTitle(),NotificationTypeEnum.REPLY_QUESTION,question.getId());
 
         }
 
     }
 
-    //     用于更新浏览数
-    public void incComCount(Long id) {
-        Question question = questionMapper.selectByPrimaryKey(id);
+    //    根据评论的类型创建相应的notification对象
+    private void createNotify(Comment comment, Long receiver, String notifierName, String outerTitle, NotificationTypeEnum notificationTypeEnum,Long parentId) {
+        if (receiver==comment.getCommentator()){
+            return;
+        }
+        Notification notification = new Notification();
+        notification.setGmtCreate(System.currentTimeMillis());
+        notification.setNotifier(comment.getCommentator());
+        notification.setReceiver(receiver);
+        notification.setStatus(NotificationStatusEnum.UNREAD.getStatus());
+        notification.setType(notificationTypeEnum.getType());
+        notification.setOuterid(parentId);
+        notification.setNotifierName(notifierName);
+        notification.setOuterTitle(outerTitle);
+        notificationMapper.insert(notification);
+    }
 
-        CommentExample commentExample = new CommentExample();
-        commentExample.createCriteria()
-                .andParentIdEqualTo(id);
-        Integer count = (int) commentMapper.countByExample(commentExample);
-        question.setCommentCount(count + 1);
+    //     当进行评论时更新评论数
+    public void incComCount(Comment comment) {
+        //        当前评论是一级评论时
+        if (comment.getType() == 1) {
+            Question question = questionMapper.selectByPrimaryKey(comment.getParentId());
+            CommentExample commentExample = new CommentExample();
+            commentExample.createCriteria()
+                    .andParentIdEqualTo(comment.getParentId());
+            Integer count = (int) commentMapper.countByExample(commentExample);
+            question.setCommentCount(count + 1);
 
-        QuestionExample example = new QuestionExample();
-        example.createCriteria()
-                .andIdEqualTo(id);
-        questionMapper.updateByExampleSelective(question, example);
+            QuestionExample example = new QuestionExample();
+            example.createCriteria()
+                    .andIdEqualTo(comment.getParentId());
+            questionMapper.updateByExampleSelective(question, example);
+        }
+
+        //   当前评论是二级评论时
+        if (comment.getType() == 2) {
+//            找到被评论的评论
+            Comment cc = commentMapper.selectByPrimaryKey(comment.getParentId());
+//            寻找到这条评论下面所有的评论
+            CommentExample commentExample = new CommentExample();
+            commentExample.createCriteria()
+                    .andParentIdEqualTo(comment.getParentId());
+            Integer count = (int) commentMapper.countByExample(commentExample);
+            cc.setCommentCount(count);
+
+//            更新这条评论情况
+            CommentExample ccexample = new CommentExample();
+            ccexample.createCriteria()
+                    .andIdEqualTo(comment.getParentId());
+            commentMapper.updateByExample(cc, ccexample);
+        }
+
     }
 
     //      展示评论
-    public List<CommentDTO> ListByQuestionId(Long id) {
+    public List<CommentDTO> ListByQuestionId(Long id, CommentTypeEnum type) {
 
         CommentExample example = new CommentExample();
         example.createCriteria()
                 .andParentIdEqualTo(id)
-                .andTypeEqualTo(CommentTypeEnum.Question.getType());
+                .andTypeEqualTo(type.getType());
+        example.setOrderByClause("gmt_create desc");
         List<Comment> comments = commentMapper.selectByExample(example);
         if (comments.size() == 0) {
             return new ArrayList<>();
@@ -116,7 +165,26 @@ public class CommentService {
         }).collect(Collectors.toList());
         return commentDTOS;
     }
+
+    //     当打开问题详情时更新评论数
+    public void UpComCount(Long id) {
+        Question question = questionMapper.selectByPrimaryKey(id);
+        CommentExample commentExample = new CommentExample();
+        commentExample.createCriteria()
+                .andParentIdEqualTo(id);
+        Integer count = (int) commentMapper.countByExample(commentExample);
+        question.setCommentCount(count);
+
+        QuestionExample example = new QuestionExample();
+        example.createCriteria()
+                .andIdEqualTo(id);
+        questionMapper.updateByExampleSelective(question, example);
+    }
 }
+
+
+
+
 
 
 

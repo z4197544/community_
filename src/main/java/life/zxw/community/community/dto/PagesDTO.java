@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class PagesDTO {
+public class PagesDTO<T> {
     private Integer page;
     private boolean first_page;
     private boolean last_page;
     private boolean previous_page;
     private boolean next_page;
-    private List<QuestionDTO> questions;
+    private List<T> data;
     private List<Integer> pages = new ArrayList<>();
     private Integer page_count;
 
